@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doomscope"><meta name="theme-color" content="#05030d">
+<link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="manifest" href="manifest.json">
+<title>Doomscope</title>
+<style>
+:root{--bg:#05030d;--card:rgba(20,12,40,.72);--line:#3b2a6b;--tx:#ece4ff;--mut:#9a8dc4;--red:#ff2a4d;--vio:#8a4dff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% -10%,#24104f 0,#0b0620 45%,var(--bg) 80%);color:var(--tx);font:16px/1.5 "Avenir Next",-apple-system,system-ui,sans-serif;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative;z-index:1;max-width:560px;margin:auto;padding:10px 16px}
+.hero{text-align:center;padding-top:6px}
+.planet{width:170px;height:120px;margin:0 auto;position:relative}
+.planet .orb{position:absolute;left:35px;top:5px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#c9a8ff,#6a2fd6 45%,#1a0838 80%);box-shadow:0 0 40px #7a3cff88,inset -14px -10px 30px #000a}
+.planet .ring{position:absolute;left:-5px;top:36px;width:180px;height:42px;border:3px solid var(--red);border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 14px #ff2a4d99;clip-path:inset(0 0 0 0)}
+.planet .moon{position:absolute;width:12px;height:12px;border-radius:50%;background:#e8dcff;box-shadow:0 0 10px #fff;left:80px;top:55px;animation:orbit 7s linear infinite}
+@keyframes orbit{from{transform:rotate(0) translateX(84px) rotate(0)}to{transform:rotate(360deg) translateX(84px) rotate(-360deg)}}
+h1{margin:6px 0 0;font:400 32px/1 "Didot","Bodoni 72",Georgia,serif;letter-spacing:.32em;text-transform:uppercase;text-shadow:0 0 18px #8a4dffcc;padding-left:.32em}
+.tag{color:var(--red);font-size:11px;letter-spacing:.35em;text-transform:uppercase;margin-top:8px;text-shadow:0 0 10px #ff2a4d88}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 0 30px #5b2fd422}
+h2{margin:0 0 10px;font:400 14px/1 Georgia,serif;letter-spacing:.25em;text-transform:uppercase;color:var(--vio)}
+label{display:block;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);margin:0 0 4px}
+input,select{width:100%;font:inherit;color:var(--tx);background:#0d0720;border:1px solid var(--line);border-radius:10px;padding:11px;margin:0 0 10px;appearance:none;-webkit-appearance:none;color-scheme:dark}
+input:focus,select:focus{outline:none;border-color:var(--vio);box-shadow:0 0 12px #8a4dff66}
+.g>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;height:44px}.g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+button.go{width:100%;font:inherit;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:14px;padding:15px;border:1px solid var(--red);border-radius:12px;background:linear-gradient(180deg,#3a0a1c,#17050e);color:#ffd3dc;box-shadow:0 0 24px #ff2a4d55;text-shadow:0 0 10px #ff2a4d}
+button.go:active{transform:scale(.98)}button.ghost{background:transparent;border-color:var(--line);box-shadow:none;color:var(--mut);margin-top:10px;text-shadow:none}
+.disc{font-size:12px;color:var(--mut);line-height:1.55;border:1px dashed #4a3a84;border-radius:12px;padding:12px;background:#0a0618aa}
+.disc b{color:var(--red);letter-spacing:.2em;text-transform:uppercase;font-size:11px}
+.res{text-align:center;animation:rise .8s ease both}@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+.big{font:400 34px/1.1 Georgia,serif;color:#fff;text-shadow:0 0 22px var(--red);margin:6px 0}
+.sm{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.cause{font:italic 400 19px/1.4 Georgia,serif;color:#ffd3dc;margin:6px 0}
+.row{display:flex;gap:10px;margin-top:12px}.row>div{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 6px;background:#0a0618aa}
+.row b{display:block;font:400 20px Georgia,serif;color:var(--vio)}
+.ld{position:fixed;inset:0;z-index:5;background:#05030dee;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px}.ld.on{display:flex}
+.ld .sp{width:90px;height:90px;border-radius:50%;border:2px dashed var(--red);animation:sp 2s linear infinite;position:relative}.ld .sp:after{content:"";position:absolute;inset:26px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9a8ff,#4a1fa8);box-shadow:0 0 30px #7a3cff}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--vio);color:#fff;padding:9px 16px;border-radius:20px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:9}.toast.s{opacity:1}
+</style></head><body>
+<canvas id="st"></canvas>
+<div class="ld" id="ld"><div class="sp"></div><div class="sm" id="lm">Aligning the planets…</div></div>
+<main>
+<div class="hero"><div class="planet"><div class="orb"></div><div class="ring"></div><div class="moon"></div></div>
+<h1>Doomscope</h1><div class="tag">what the stars whisper</div></div>
+<div id="app"></div>
+<div class="disc"><b>Disclaimer</b><br>Just for fun. This is a silly, made-up toy based on the stars and your inputs. It is not real astrology, not a real prediction, and nobody can know any of this. Don’t take it seriously. If heavy feelings ever come up, talk to someone you trust.</div>
+</main><div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const SG=[["Aries","♈","fire"],["Taurus","♉","earth"],["Gemini","♊","air"],["Cancer","♋","water"],["Leo","♌","fire"],["Virgo","♍","earth"],["Libra","♎","air"],["Scorpio","♏","water"],["Sagittarius","♐","fire"],["Capricorn","♑","earth"],["Aquarius","♒","air"],["Pisces","♓","water"]];
+const PL=[["sun","☉ Sun"],["moon","☽ Moon"],["asc","⬆ Rising"],["mer","☿ Mercury"],["ven","♀ Venus"],["mar","♂ Mars"],["jup","♃ Jupiter"],["sat","♄ Saturn"]];
+const CA={fire:["Spontaneously turned into glitter after winning an argument with the sun","Sneezed so hard that wind chimes rang in three countries","Raced a comet. The comet remains undefeated","Rode a shopping cart down a very dramatic hill, with great style"],
+earth:["Fell asleep in a hammock and was gently absorbed by a comfy cloud","Tripped over their own legendary houseplant collection","Won a staring contest with a mountain","Ate the last slice of cake. The universe said ‘that was the plot’"],
+air:["Laughed so hard at a cosmic joke that the universe gave a standing ovation","Floated away holding too many balloons at a great party","Got lost in a group chat that never ended","Whispered a secret to the wind, and the wind kept talking"],
+water:["Dissolved into a puddle of feelings at the end of a really good movie","Slipped on a banana peel while carrying a perfect cup of tea","Became one with the bubbles during a very long bubble bath","Was called back to the ocean by a very persuasive dolphin"]};
+const LW=["“Wait, was that Mercury retrograde the whole time?”","“Tell the cat I was right.”","“I knew I should’ve texted back.”","“Is that… a shooting star? Make a wish!”","“Worth it.”","“I’d like to speak to the moon’s manager.”","“Who’s up for dessert?”","“Told you the horoscope was accurate.”"];
+const OM=["Beware: a pigeon holds a grudge against you.","Your lucky number is whatever you didn’t pick.","Avoid group chats during a full moon.","Saturn says: drink some water.","A stranger will compliment your socks. Accept it.","Never trust a Scorpio with the last fry.","Mars is judging your sleep schedule.","Venus approves of your snack choices."];
+function h(str){let a=1779033703,b=3144134277,c=1013904242,d=2773480762;for(let i=0;i<str.length;i++){const k=str.charCodeAt(i);a=b^Math.imul(a^k,597399067);b=c^Math.imul(b^k,2869860233);c=d^Math.imul(c^k,951274213);d=a^Math.imul(d^k,2716044179)}return(a^b^c^d)>>>0}
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function sunSign(m,d){const C=[[1,20,10],[2,19,11],[3,21,0],[4,20,1],[5,21,2],[6,21,3],[7,23,4],[8,23,5],[9,23,6],[10,23,7],[11,22,8],[12,22,9]];let r=9;for(const[mm,dd,i]of C)if(m>mm||(m===mm&&d>=dd))r=i;return r}
+function form(){return `<div class="card"><h2>Your Natal Chart</h2>
+<label>Name</label><input id="nm" type="text" placeholder="Your name" autocomplete="off">
+<div class="g"><div><label>Birth date</label><input id="bd" type="date" onchange="autoSun()"></div><div><label>Birth time</label><input id="bt" type="time"></div></div>
+<label>Birth place</label><input id="bp" type="text" placeholder="City, Country" autocomplete="off">
+<div class="g">${PL.map(([k,l])=>`<div><label>${l}</label><select id="${k}">${SG.map((s,i)=>`<option value="${i}">${s[1]} ${s[0]}</option>`).join('')}</select></div>`).join('')}</div>
+<button class="go" onclick="consult()">Consult the stars</button></div>`}
+function autoSun(){const v=$('#bd').value;if(!v)return;const[,m,d]=v.split('-').map(Number);$('#sun').value=sunSign(m,d)}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('s');setTimeout(()=>t.classList.remove('s'),1500)}
+let last='';
+function consult(){const nm=$('#nm').value.trim(),bd=$('#bd').value;if(!nm||!bd){toast('Enter your name and birth date');return}
+ const ms=["Aligning the planets…","Waking Saturn from its nap…","Asking the moon for gossip…","Consulting a very old comet…"];let i=0;$('#ld').classList.add('on');const iv=setInterval(()=>{$('#lm').textContent=ms[++i%ms.length]},650);
+ setTimeout(()=>{clearInterval(iv);$('#ld').classList.remove('on');reveal(nm,bd)},2600)}
+function reveal(nm,bd){const v=Object.fromEntries(PL.map(([k])=>[k,+$('#'+k).value]));
+ const key=[nm.toLowerCase(),bd,$('#bt').value,$('#bp').value.toLowerCase(),...PL.map(([k])=>v[k])].join('|');const r=rng(h(key));
+ const age=82+Math.floor(r()*30)+(v.jup%3);const b=new Date(bd+'T12:00:00');let dt=new Date(b);dt.setFullYear(b.getFullYear()+age);dt.setDate(dt.getDate()+Math.floor(r()*365));
+ const min=new Date();min.setFullYear(min.getFullYear()+25+Math.floor(r()*20));if(dt<min){dt=min}
+ const fin=Math.max(0,dt.getFullYear()-b.getFullYear());
+ const el=SG[[v.mar,v.sat,v.moon,v.sun][Math.floor(r()*4)]][2];const cause=CA[el][Math.floor(r()*4)];
+ const pl=PL[3+Math.floor(r()*5)][1];const days=Math.round((dt-new Date())/864e5);
+ const ds=dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+ const lw=LW[Math.floor(r()*LW.length)],om=OM[Math.floor(r()*OM.length)];
+ last=`🔮 Doomscope says ${nm} meets the great cosmic joke on ${ds} (age ${fin}). Cause: ${cause}. Just for fun!`;
+ $('#app').innerHTML=`<div class="card res"><div class="sm">The stars whisper, ${nm.replace(/</g,'&lt;')}</div><div class="big">${ds}</div>
+ <div class="sm">at about age ${fin}</div><div style="height:12px"></div><div class="sm">How</div><div class="cause">${cause}.</div>
+ <div class="row"><div><b>${fin}</b><span class="sm">Age</span></div><div><b>${days.toLocaleString()}</b><span class="sm">Days left</span></div><div><b>${pl.split(' ')[0]}</b><span class="sm">Haunted by</span></div></div>
+ <div style="height:12px"></div><div class="sm">Final words</div><div class="cause" style="font-size:16px">${lw}</div>
+ <div class="sm" style="margin-top:8px">Cosmic tip</div><div style="color:var(--mut);font-size:14px">${om}</div>
+ <button class="go" style="margin-top:14px" onclick="cp()">Copy &amp; share</button><button class="go ghost" onclick="again()">Read another chart</button>
+ <div class="sm" style="margin-top:12px;letter-spacing:.15em;text-transform:none;font-size:11px">Pure entertainment. The stars were joking.</div></div>`;scrollTo(0,0)}
+function cp(){const f=()=>{const a=document.createElement('textarea');a.value=last;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('Copied ✓')}catch(e){toast('Press and hold to copy')}a.remove()};
+ if(navigator.clipboard)navigator.clipboard.writeText(last).then(()=>toast('Copied ✓'),f);else f()}
+function again(){$('#app').innerHTML=form();scrollTo(0,0)}
+$('#app').innerHTML=form();
+const cv=$('#st'),cx=cv.getContext('2d');let S=[];
+function rs(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio;S=Array.from({length:90},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:(Math.random()*1.4+.3)*devicePixelRatio,p:Math.random()*6}))}
+function tick(t){cx.clearRect(0,0,cv.width,cv.height);for(const s of S){cx.globalAlpha=.35+.65*Math.abs(Math.sin(t/900+s.p));cx.fillStyle="#d9c8ff";cx.beginPath();cx.arc(s.x,s.y,s.r,0,6.3);cx.fill()}requestAnimationFrame(tick)}
+addEventListener('resize',rs);rs();requestAnimationFrame(tick);
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
