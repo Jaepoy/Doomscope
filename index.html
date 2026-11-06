@@ -25,7 +25,7 @@ h2{margin:0 0 10px;font:400 14px/1 Georgia,serif;letter-spacing:.25em;text-trans
 label{display:block;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);margin:0 0 4px}
 input,select{width:100%;font:inherit;color:var(--tx);background:#0d0720;border:1px solid var(--line);border-radius:10px;padding:11px;margin:0 0 10px;appearance:none;-webkit-appearance:none;color-scheme:dark}
 input:focus,select:focus{outline:none;border-color:var(--vio);box-shadow:0 0 12px #8a4dff66}
-.g>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;height:44px}.g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.g>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;height:44px}.pr{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a1f52;font-size:15px}.pr span:first-child{color:var(--mut);letter-spacing:.08em}.pr em{color:var(--vio);font-style:normal;font-size:13px;margin-left:6px}details>summary{cursor:pointer;color:var(--mut);font-size:13px;letter-spacing:.12em;text-transform:uppercase;list-style:none}.g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 button.go{width:100%;font:inherit;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:14px;padding:15px;border:1px solid var(--red);border-radius:12px;background:linear-gradient(180deg,#3a0a1c,#17050e);color:#ffd3dc;box-shadow:0 0 24px #ff2a4d55;text-shadow:0 0 10px #ff2a4d}
 button.go:active{transform:scale(.98)}button.ghost{background:transparent;border-color:var(--line);box-shadow:none;color:var(--mut);margin-top:10px;text-shadow:none}
 .disc{font-size:12px;color:var(--mut);line-height:1.55;border:1px dashed #4a3a84;border-radius:12px;padding:12px;background:#0a0618aa}
@@ -47,7 +47,7 @@ button.go:active{transform:scale(.98)}button.ghost{background:transparent;border
 <div class="hero"><div class="planet"><div class="orb"></div><div class="ring"></div><div class="moon"></div></div>
 <h1>Doomscope</h1><div class="tag">what the stars whisper</div></div>
 <div id="app"></div>
-<div class="disc"><b>Disclaimer</b><br>Just for fun. This is a silly, made-up toy based on the stars and your inputs. It is not real astrology, not a real prediction, and nobody can know any of this. Don’t take it seriously. If heavy feelings ever come up, talk to someone you trust.</div>
+<div class="disc"><b>Disclaimer</b><br>Just for fun. Your chart positions are calculated from your birth details and are only an estimate, but the “prediction” is a silly, made-up toy. It is not real astrology, not a real prediction, and nobody can know any of this. Don’t take it seriously. If heavy feelings ever come up, talk to someone you trust.</div>
 </main><div class="toast" id="toast"></div>
 <script>
 const $=s=>document.querySelector(s);
@@ -62,16 +62,60 @@ const OM=["Beware: a pigeon holds a grudge against you.","Your lucky number is w
 function h(str){let a=1779033703,b=3144134277,c=1013904242,d=2773480762;for(let i=0;i<str.length;i++){const k=str.charCodeAt(i);a=b^Math.imul(a^k,597399067);b=c^Math.imul(b^k,2869860233);c=d^Math.imul(c^k,951274213);d=a^Math.imul(d^k,2716044179)}return(a^b^c^d)>>>0}
 function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function sunSign(m,d){const C=[[1,20,10],[2,19,11],[3,21,0],[4,20,1],[5,21,2],[6,21,3],[7,23,4],[8,23,5],[9,23,6],[10,23,7],[11,22,8],[12,22,9]];let r=9;for(const[mm,dd,i]of C)if(m>mm||(m===mm&&d>=dd))r=i;return r}
-function form(){return `<div class="card"><h2>Your Natal Chart</h2>
+//ASTRO-START
+const RD=Math.PI/180,nrm=x=>((x%360)+360)%360;
+function kep(M,e){let E=M+e/RD*Math.sin(M*RD)*(1+e*Math.cos(M*RD));for(let i=0;i<10;i++){const d=(E-e/RD*Math.sin(E*RD)-M)/(1-e*Math.cos(E*RD));E-=d;if(Math.abs(d)<1e-7)break}return E}
+const EL={sun:d=>[0,0,282.9404+4.70935e-5*d,1,0.016709-1.151e-9*d,356.047+0.9856002585*d],
+moon:d=>[125.1228-0.0529538083*d,5.1454,318.0634+0.1643573223*d,60.2666,0.0549,115.3654+13.0649929509*d],
+mer:d=>[48.3313+3.24587e-5*d,7.0047+5e-8*d,29.1241+1.01444e-5*d,0.387098,0.205635+5.59e-10*d,168.6562+4.0923344368*d],
+ven:d=>[76.6799+2.4659e-5*d,3.3946+2.75e-8*d,54.891+1.38374e-5*d,0.72333,0.006773-1.302e-9*d,48.0052+1.6021302244*d],
+mar:d=>[49.5574+2.11081e-5*d,1.8497-1.78e-8*d,286.5016+2.92961e-5*d,1.523688,0.093405+2.516e-9*d,18.6021+0.5240207766*d],
+jup:d=>[100.4542+2.76854e-5*d,1.303-1.557e-7*d,273.8777+1.64505e-5*d,5.20256,0.048498+4.469e-9*d,19.895+0.0830853001*d],
+sat:d=>[113.6634+2.3898e-5*d,2.4886-1.081e-7*d,339.3939+2.97661e-5*d,9.55475,0.055546-9.499e-9*d,316.967+0.0334442282*d]};
+function orb(k,d){const[N,i,w,a,e,M0]=EL[k](d),M=nrm(M0),E=kep(M,e),xv=a*(Math.cos(E*RD)-e),yv=a*Math.sqrt(1-e*e)*Math.sin(E*RD),v=Math.atan2(yv,xv)/RD,r=Math.hypot(xv,yv),vw=(v+w)*RD,n=N*RD,ii=i*RD;
+ return{x:r*(Math.cos(n)*Math.cos(vw)-Math.sin(n)*Math.sin(vw)*Math.cos(ii)),y:r*(Math.sin(n)*Math.cos(vw)+Math.cos(n)*Math.sin(vw)*Math.cos(ii)),r,v,w,M,N}}
+function planets(jd){const d=jd-2451543.5,S=orb('sun',d),Ls=nrm(S.v+S.w),out={sun:Ls};
+ const mo=orb('moon',d),Ms=nrm(S.M),Mm=nrm(mo.M),Lm=nrm(Mm+mo.w+mo.N),D=nrm(Lm-(S.M+S.w)),F=nrm(Lm-mo.N),s=x=>Math.sin(x*RD);
+ out.moon=nrm(Math.atan2(mo.y,mo.x)/RD-1.274*s(Mm-2*D)+0.658*s(2*D)-0.186*s(Ms)-0.059*s(2*Mm-2*D)-0.057*s(Mm-2*D+Ms)+0.053*s(Mm+2*D)+0.046*s(2*D-Ms)+0.041*s(Mm-Ms)-0.035*s(D)-0.031*s(Mm+Ms)-0.015*s(2*F-2*D)+0.011*s(Mm-4*D));
+ const Mj=nrm(EL.jup(d)[5]),Mk=nrm(EL.sat(d)[5]);
+ for(const k of['mer','ven','mar','jup','sat']){const p=orb(k,d);let l=Math.atan2(p.y+S.y,p.x+S.x)/RD;
+  if(k==='jup')l+=-0.332*s(2*Mj-5*Mk-67.6)-0.056*s(2*Mj-2*Mk+21)+0.042*s(3*Mj-5*Mk+21)-0.036*s(Mj-2*Mk)+0.022*Math.cos((Mj-Mk)*RD)+0.023*s(2*Mj-3*Mk+52)-0.016*s(Mj-5*Mk-69);
+  if(k==='sat')l+=0.812*s(2*Mj-5*Mk-67.6)-0.229*Math.cos((2*Mj-4*Mk-2)*RD)+0.119*s(Mj-2*Mk-3)+0.046*s(2*Mj-6*Mk-69)+0.014*s(Mj-3*Mk+32);
+  out[k]=nrm(l)}
+ return out}
+function ascendant(jd,lat,lon){const T=(jd-2451545)/36525,g=nrm(280.46061837+360.98564736629*(jd-2451545)+0.000387933*T*T),ram=nrm(g+lon)*RD,eps=(23.4393-3.563e-7*(jd-2451543.5))*RD;
+ return nrm(Math.atan2(Math.cos(ram),-(Math.sin(ram)*Math.cos(eps)+Math.tan(lat*RD)*Math.sin(eps)))/RD)}
+function tzOff(ms,tz){const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'}),p=Object.fromEntries(f.formatToParts(new Date(ms)).map(x=>[x.type,x.value]));return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(ms/1000)*1000}
+function toUTC(y,m,d,h,mi,tz){const loc=Date.UTC(y,m-1,d,h,mi);let u=loc-tzOff(loc,tz);u=loc-tzOff(u,tz);return u}
+//ASTRO-END
+const CITY=[["manila",14.5995,120.9842,"Asia/Manila","Manila, Philippines"],["quezon city",14.676,121.0437,"Asia/Manila","Quezon City, Philippines"],["makati",14.5547,121.0244,"Asia/Manila","Makati, Philippines"],["pasig",14.5764,121.0851,"Asia/Manila","Pasig, Philippines"],["taguig",14.5176,121.0509,"Asia/Manila","Taguig, Philippines"],["caloocan",14.6488,120.9830,"Asia/Manila","Caloocan, Philippines"],["cebu",10.3157,123.8854,"Asia/Manila","Cebu City, Philippines"],["davao",7.1907,125.4553,"Asia/Manila","Davao City, Philippines"],["baguio",16.4023,120.596,"Asia/Manila","Baguio, Philippines"],["iloilo",10.7202,122.5621,"Asia/Manila","Iloilo City, Philippines"],["cagayan de oro",8.4542,124.6319,"Asia/Manila","Cagayan de Oro, Philippines"],["zamboanga",6.9214,122.079,"Asia/Manila","Zamboanga City, Philippines"],["bacolod",10.6713,122.9511,"Asia/Manila","Bacolod, Philippines"],["angeles",15.145,120.5887,"Asia/Manila","Angeles, Philippines"],["general santos",6.1164,125.1716,"Asia/Manila","General Santos, Philippines"],["new york",40.7128,-74.006,"America/New_York","New York, USA"],["los angeles",34.0522,-118.2437,"America/Los_Angeles","Los Angeles, USA"],["san francisco",37.7749,-122.4194,"America/Los_Angeles","San Francisco, USA"],["chicago",41.8781,-87.6298,"America/Chicago","Chicago, USA"],["honolulu",21.3069,-157.8583,"Pacific/Honolulu","Honolulu, USA"],["toronto",43.6532,-79.3832,"America/Toronto","Toronto, Canada"],["vancouver",49.2827,-123.1207,"America/Vancouver","Vancouver, Canada"],["london",51.5074,-0.1278,"Europe/London","London, UK"],["paris",48.8566,2.3522,"Europe/Paris","Paris, France"],["madrid",40.4168,-3.7038,"Europe/Madrid","Madrid, Spain"],["rome",41.9028,12.4964,"Europe/Rome","Rome, Italy"],["berlin",52.52,13.405,"Europe/Berlin","Berlin, Germany"],["dubai",25.2048,55.2708,"Asia/Dubai","Dubai, UAE"],["abu dhabi",24.4539,54.3773,"Asia/Dubai","Abu Dhabi, UAE"],["doha",25.2854,51.531,"Asia/Qatar","Doha, Qatar"],["riyadh",24.7136,46.6753,"Asia/Riyadh","Riyadh, Saudi Arabia"],["jeddah",21.4858,39.1925,"Asia/Riyadh","Jeddah, Saudi Arabia"],["kuwait",29.3759,47.9774,"Asia/Kuwait","Kuwait City, Kuwait"],["singapore",1.3521,103.8198,"Asia/Singapore","Singapore"],["hong kong",22.3193,114.1694,"Asia/Hong_Kong","Hong Kong"],["taipei",25.033,121.5654,"Asia/Taipei","Taipei, Taiwan"],["tokyo",35.6762,139.6503,"Asia/Tokyo","Tokyo, Japan"],["seoul",37.5665,126.978,"Asia/Seoul","Seoul, South Korea"],["bangkok",13.7563,100.5018,"Asia/Bangkok","Bangkok, Thailand"],["jakarta",-6.2088,106.8456,"Asia/Jakarta","Jakarta, Indonesia"],["kuala lumpur",3.139,101.6869,"Asia/Kuala_Lumpur","Kuala Lumpur, Malaysia"],["mumbai",19.076,72.8777,"Asia/Kolkata","Mumbai, India"],["sydney",-33.8688,151.2093,"Australia/Sydney","Sydney, Australia"],["melbourne",-37.8136,144.9631,"Australia/Melbourne","Melbourne, Australia"]];
+async function geo(q){const name=q.split(',')[0].trim(),rest=q.split(',').slice(1).join(' ').toLowerCase().trim();
+ try{const c=new AbortController(),t=setTimeout(()=>c.abort(),4000);const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=8&language=en&format=json',{signal:c.signal});clearTimeout(t);const j=await r.json(),L=j.results||[];
+  if(L.length){let p=L[0];if(rest){const f=L.find(x=>(x.country||'').toLowerCase().includes(rest)||(x.admin1||'').toLowerCase().includes(rest)||(x.country_code||'').toLowerCase()===rest);if(f)p=f}
+  return{lat:p.latitude,lon:p.longitude,tz:p.timezone,label:[p.name,p.admin1,p.country].filter(Boolean).join(', ')}}}catch(e){}
+ const k=name.toLowerCase();const m=CITY.find(c=>k.includes(c[0])||c[0].includes(k));return m?{lat:m[1],lon:m[2],tz:m[3],label:m[4]}:null}
+function form(){return `<div class="card"><h2>Your Birth Details</h2>
 <label>Name</label><input id="nm" type="text" placeholder="Your name" autocomplete="off">
-<div class="g"><div><label>Birth date</label><input id="bd" type="date" onchange="autoSun()"></div><div><label>Birth time</label><input id="bt" type="time"></div></div>
-<label>Birth place</label><input id="bp" type="text" placeholder="City, Country" autocomplete="off">
-<div class="g">${PL.map(([k,l])=>`<div><label>${l}</label><select id="${k}">${SG.map((s,i)=>`<option value="${i}">${s[1]} ${s[0]}</option>`).join('')}</select></div>`).join('')}</div>
-<button class="go" onclick="consult()">Consult the stars</button></div>`}
-function autoSun(){const v=$('#bd').value;if(!v)return;const[,m,d]=v.split('-').map(Number);$('#sun').value=sunSign(m,d)}
+<div class="g"><div><label>Birth date</label><input id="bd" type="date"></div><div><label>Birth time</label><input id="bt" type="time"></div></div>
+<label>Birth place</label><input id="bp" type="text" placeholder="City, Country (e.g. Manila, Philippines)" autocomplete="off">
+<button class="go" onclick="calc()">Calculate my chart</button></div><div id="chart"></div>`}
+const fmt=l=>{const d=l%30;return Math.floor(d)+'°'+String(Math.floor((d%1)*60)).padStart(2,'0')+'′'};
+async function calc(){const bd=$('#bd').value,bp=$('#bp').value.trim();if(!bd){toast('Enter your birth date');return}
+ $('#chart').innerHTML='<div class="card res"><div class="sm">Reading the sky of your birth…</div></div>';
+ const[y,m,d]=bd.split('-').map(Number),bt=$('#bt').value,[hh,mm]=(bt||'12:00').split(':').map(Number);
+ const pl=bp?await geo(bp):null;const tz=pl?pl.tz:'UTC';
+ const u=toUTC(y,m,d,hh,mm,tz),jd=u/864e5+2440587.5,P=planets(jd);
+ P.asc=pl?ascendant(jd,pl.lat,pl.lon):P.sun;
+ const notes=[];notes.push(pl?`Birthplace: ${pl.label} (${pl.lat.toFixed(2)}°, ${pl.lon.toFixed(2)}°)`:(bp?'Couldn’t find that place, so Rising is set to your Sun sign. Edit it below if you know it.':'No birthplace given, so Rising is set to your Sun sign. Edit it below if you know it.'));
+ if(!bt)notes.push('No birth time given, so I used 12:00 noon. Moon and Rising may be off.');
+ $('#chart').innerHTML=`<div class="card"><h2>Your Natal Chart</h2>${PL.map(([k,l])=>`<div class="pr"><span>${l}</span><span>${SG[Math.floor(P[k]/30)][1]} ${SG[Math.floor(P[k]/30)][0]} <em>${fmt(P[k])}</em></span></div>`).join('')}
+ <div class="sm" style="letter-spacing:.08em;text-transform:none;margin:10px 0;line-height:1.5">${notes.join('<br>')}</div>
+ <details><summary>Edit chart manually</summary><div class="g" style="margin-top:10px">${PL.map(([k,l])=>`<div><label>${l}</label><select id="${k}">${SG.map((x,i)=>`<option value="${i}" ${i===Math.floor(P[k]/30)?'selected':''}>${x[1]} ${x[0]}</option>`).join('')}</select></div>`).join('')}</div></details>
+ <button class="go" style="margin-top:14px" onclick="consult()">Consult the stars</button></div>`;
+ $('#chart').scrollIntoView({behavior:'smooth'})}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('s');setTimeout(()=>t.classList.remove('s'),1500)}
 let last='';
-function consult(){const nm=$('#nm').value.trim(),bd=$('#bd').value;if(!nm||!bd){toast('Enter your name and birth date');return}
+function consult(){const nm=$('#nm').value.trim(),bd=$('#bd').value;if(!nm||!bd||!$('#sun')){toast(!$('#sun')?'Calculate your chart first':'Enter your name and birth date');return}
  const ms=["Aligning the planets…","Waking Saturn from its nap…","Asking the moon for gossip…","Consulting a very old comet…"];let i=0;$('#ld').classList.add('on');const iv=setInterval(()=>{$('#lm').textContent=ms[++i%ms.length]},650);
  setTimeout(()=>{clearInterval(iv);$('#ld').classList.remove('on');reveal(nm,bd)},2600)}
 function reveal(nm,bd){const v=Object.fromEntries(PL.map(([k])=>[k,+$('#'+k).value]));
